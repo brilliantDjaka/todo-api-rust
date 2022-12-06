@@ -1,4 +1,4 @@
-use ::mongodb::{error::Error, Client};
+use ::mongodb::{error::Error, Client, Collection};
 
 use crate::mongodb;
 
@@ -11,12 +11,13 @@ pub struct TodoRepository {
 }
 
 impl TodoRepository {
-    pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
-        let collection = self
-            .db
+    fn get_collection(&self) -> Collection<Todo> {
+        self.db
             .database(mongodb::DB_NAME)
-            .collection::<Todo>(COLLECTION_NAME);
-        let insert_res = collection.insert_one(&todo, None).await?;
+            .collection::<Todo>(COLLECTION_NAME)
+    }
+    pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
+        let insert_res = self.get_collection().insert_one(&todo, None).await?;
         Ok(Todo {
             id: insert_res.inserted_id.as_object_id().unwrap().to_string(),
             text: todo.text,
