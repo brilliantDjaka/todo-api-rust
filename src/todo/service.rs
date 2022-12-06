@@ -1,4 +1,4 @@
-use super::{entity::Todo, repository::TodoRepository};
+use super::{controller::AddTodoDto, entity::Todo, repository::TodoRepository};
 use mongodb::error::Error;
 
 pub struct TodoService {
@@ -6,10 +6,10 @@ pub struct TodoService {
 }
 
 impl TodoService {
-    pub async fn add_todo(&self, text: &str) -> Result<Todo, Error> {
+    pub async fn add_todo(&self, dto: AddTodoDto) -> Result<Todo, Error> {
         let todo = Todo {
             id: String::from("dummy"),
-            text: String::from(text),
+            text: dto.text,
             is_done: true,
         };
 
