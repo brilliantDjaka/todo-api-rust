@@ -28,3 +28,4 @@ Simple TODO REST API written in rust a.k.a rust boilerplate
 
 - Implement partial update
 - Implement request validation
+- add better error handling
