@@ -1,5 +1,5 @@
 use ::mongodb::{
-    bson::{doc, oid::ObjectId},
+    bson::{doc, oid::ObjectId, to_document},
     error::Error,
     Client, Collection,
 };
@@ -44,6 +44,23 @@ impl TodoRepository {
             )
             .await?;
 
+        Ok(todo)
+    }
+
+    //TODO: Implement Partial Update
+    pub async fn update_by_id(&self, id: &str, todo: Todo) -> Result<Todo, Error> {
+        let _id = ObjectId::parse_str(id).unwrap_or_default();
+        let todo = Todo { _id, ..todo };
+        let update_doc = to_document(&todo)?;
+        self.get_collection()
+            .update_one(
+                doc! {"_id": _id},
+                doc! {
+                    "$set": update_doc
+                },
+                None,
+            )
+            .await?;
         Ok(todo)
     }
 }

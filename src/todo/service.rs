@@ -1,4 +1,8 @@
-use super::{controller::AddTodoDto, entity::Todo, repository::TodoRepository};
+use super::{
+    controller::{AddTodoDto, UpdateTodoDto},
+    entity::Todo,
+    repository::TodoRepository,
+};
 use mongodb::{bson::oid::ObjectId, error::Error};
 
 pub struct TodoService {
@@ -20,6 +24,19 @@ impl TodoService {
     }
     pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
         self.todo_repo.get_by_id(id).await
+    }
+
+    pub async fn update_by_id(&self, id: &str, dto: UpdateTodoDto) -> Result<Todo, Error> {
+        self.todo_repo
+            .update_by_id(
+                id,
+                Todo {
+                    text: dto.text,
+                    is_done: dto.is_done,
+                    _id: ObjectId::default(),
+                },
+            )
+            .await
     }
 }
 
