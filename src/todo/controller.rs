@@ -10,6 +10,7 @@ pub fn controller_list() -> Scope {
         .service(get_by_id)
         .service(delete_by_id)
         .service(add)
+        .service(update_by_id)
 }
 #[derive(Deserialize)]
 pub struct AddTodoDto {
