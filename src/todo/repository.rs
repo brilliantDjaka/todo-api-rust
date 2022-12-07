@@ -4,7 +4,6 @@ use ::mongodb::{
 };
 use futures::stream::TryStreamExt;
 use mongodb::bson::to_document;
-use rocket::futures;
 
 use crate::err::Error;
 use crate::mongodb::DB_NAME;
