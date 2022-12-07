@@ -9,7 +9,7 @@ use todo_rust::{
 
 #[get("/")]
 async fn health_check() -> impl Responder {
-    HttpResponse::Ok().body("Serve is running 🚀")
+    HttpResponse::Ok().body("Server is running 🚀")
 }
 
 #[actix_web::main]
