@@ -1,4 +1,6 @@
 use ::mongodb::{error::Error, Client, Collection};
+use futures::stream::TryStreamExt;
+use rocket::futures;
 
 use crate::mongodb;
 
@@ -17,12 +19,14 @@ impl TodoRepository {
             .collection::<Todo>(COLLECTION_NAME)
     }
     pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
-        let insert_res = self.get_collection().insert_one(&todo, None).await?;
-        Ok(Todo {
-            id: insert_res.inserted_id.as_object_id().unwrap().to_string(),
-            text: todo.text,
-            is_done: todo.is_done,
-        })
+        self.get_collection().insert_one(&todo, None).await?;
+        Ok(todo)
+    }
+    pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
+        let todos = self.get_collection().find(None, None).await?;
+        let todos: Vec<Todo> = todos.try_collect().await?;
+
+        Ok(todos)
     }
 }
 

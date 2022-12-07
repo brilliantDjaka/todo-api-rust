@@ -1,9 +1,10 @@
+use mongodb::bson::oid::ObjectId;
 use rocket::serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Todo {
-    pub id: String,
+    pub _id: ObjectId,
     pub text: String,
     pub is_done: bool,
 }

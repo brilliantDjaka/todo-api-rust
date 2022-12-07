@@ -1,5 +1,5 @@
 use super::{controller::AddTodoDto, entity::Todo, repository::TodoRepository};
-use mongodb::error::Error;
+use mongodb::{bson::oid::ObjectId, error::Error};
 
 pub struct TodoService {
     todo_repo: TodoRepository,
@@ -8,12 +8,15 @@ pub struct TodoService {
 impl TodoService {
     pub async fn add_todo(&self, dto: AddTodoDto) -> Result<Todo, Error> {
         let todo = Todo {
-            id: String::from("dummy"),
+            _id: ObjectId::default(),
             text: dto.text,
-            is_done: true,
+            is_done: false,
         };
 
         self.todo_repo.insert_new_todo(todo).await
+    }
+    pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
+        self.todo_repo.get_all().await
     }
 }
 
