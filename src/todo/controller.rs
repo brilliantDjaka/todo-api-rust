@@ -1,72 +1,80 @@
-use rocket::{
-    delete, form::Form, get, http::Status, patch, post, routes, serde::json::Json, FromForm, Route,
-    State,
-};
+use actix_web::{delete, get, patch, post, web, web::Form, HttpRequest, HttpResponse, Scope};
+use serde::Deserialize;
 
 use crate::err::convert_err;
 use crate::AppState;
 
-use super::entity::Todo;
-
-pub fn controller_list() -> Vec<Route> {
-    routes![add, get_all, get_by_id, update_by_id, delete_by_id]
+pub fn controller_list() -> Scope {
+    web::scope("/todo")
+        .service(get_all)
+        .service(get_by_id)
+        .service(delete_by_id)
+        .service(add)
 }
-#[derive(FromForm)]
+#[derive(Deserialize)]
 pub struct AddTodoDto {
     pub text: String,
 }
 
-#[post("/", data = "<dto>")]
-async fn add(dto: Form<AddTodoDto>, service: &State<AppState>) -> Result<Json<Todo>, Status> {
+#[post("")]
+async fn add(dto: Form<AddTodoDto>, service: web::Data<AppState>) -> HttpResponse {
     match service.todo_service.add_todo(dto.into_inner()).await {
-        Err(err) => Err(convert_err(err)),
-        Ok(todo) => Ok(Json(todo)),
+        Err(err) => convert_err(err).body(""),
+        Ok(todo) => HttpResponse::Created().json(todo),
     }
 }
 
-#[get("/")]
-async fn get_all(service: &State<AppState>) -> Result<Json<Vec<Todo>>, Status> {
+#[get("")]
+pub async fn get_all(service: web::Data<AppState>) -> HttpResponse {
     match service.todo_service.get_all().await {
-        Err(err) => Err(convert_err(err)),
-        Ok(todo) => Ok(Json(todo)),
+        Ok(todo) => HttpResponse::Ok().json(todo),
+        Err(err) => convert_err(err).body(""),
     }
 }
-#[get("/<id>")]
-async fn get_by_id(id: &str, service: &State<AppState>) -> Result<Json<Todo>, Status> {
-    match service.todo_service.get_by_id(id).await {
-        Err(err) => Err(convert_err(err)),
+#[get("/{id}")]
+async fn get_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpResponse {
+    match service
+        .todo_service
+        .get_by_id(req.match_info().get("id").unwrap())
+        .await
+    {
+        Err(err) => convert_err(err).body(""),
         Ok(todo) => match todo {
-            Some(todo) => Ok(Json(todo)),
-            None => Err(Status::NotFound),
+            Some(todo) => HttpResponse::Ok().json(todo),
+            None => HttpResponse::NotFound().body(""),
         },
     }
 }
-#[derive(FromForm)]
+#[derive(Deserialize)]
 pub struct UpdateTodoDto {
     pub text: String,
     pub is_done: bool,
 }
 
-#[patch("/<id>", data = "<dto>")]
+#[patch("/{id}")]
 async fn update_by_id(
-    id: &str,
+    req: HttpRequest,
     dto: Form<UpdateTodoDto>,
-    service: &State<AppState>,
-) -> Result<Json<Todo>, Status> {
+    service: web::Data<AppState>,
+) -> HttpResponse {
     match service
         .todo_service
-        .update_by_id(id, dto.into_inner())
+        .update_by_id(req.match_info().get("id").unwrap(), dto.into_inner())
         .await
     {
-        Err(err) => Err(convert_err(err)),
-        Ok(todo) => Ok(Json(todo)),
+        Err(err) => convert_err(err).body(""),
+        Ok(todo) => HttpResponse::Ok().json(todo),
     }
 }
 
-#[delete("/<id>")]
-async fn delete_by_id(id: &str, service: &State<AppState>) -> Status {
-    match service.todo_service.delete_by_id(id).await {
-        Some(err) => convert_err(err),
-        None => Status::Ok,
+#[delete("/{id}")]
+async fn delete_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpResponse {
+    match service
+        .todo_service
+        .delete_by_id(req.match_info().get("id").unwrap())
+        .await
+    {
+        Some(err) => convert_err(err).body(""),
+        None => HttpResponse::Ok().body(""),
     }
 }

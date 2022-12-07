@@ -1,9 +1,8 @@
 use ::mongodb::{
-    bson::{doc, oid::ObjectId},
+    bson::{doc, oid::ObjectId, to_document},
     Client, Collection,
 };
 use futures::stream::TryStreamExt;
-use mongodb::bson::to_document;
 
 use crate::err::Error;
 use crate::mongodb::DB_NAME;
@@ -12,6 +11,7 @@ use super::entity::Todo;
 
 const COLLECTION_NAME: &str = "todos";
 
+#[derive(Clone)]
 pub struct TodoRepository {
     db: Client,
 }

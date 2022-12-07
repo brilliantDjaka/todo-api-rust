@@ -1,5 +1,6 @@
-use rocket::http::Status;
+use actix_web::{HttpResponse, HttpResponseBuilder};
 use thiserror::Error;
+
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("something wrong with server")]
@@ -9,10 +10,10 @@ pub enum Error {
     #[error("something wrong with client")]
     BadRequestError,
 }
-pub fn convert_err(err: Error) -> Status {
+pub fn convert_err(err: Error) -> HttpResponseBuilder {
     match err {
-        Error::InternalServerError => Status::InternalServerError,
-        Error::BadRequestError => Status::BadRequest,
-        Error::NotFoundError => Status::NotFound,
+        Error::InternalServerError => HttpResponse::InternalServerError(),
+        Error::BadRequestError => HttpResponse::BadRequest(),
+        Error::NotFoundError => HttpResponse::NotFound(),
     }
 }

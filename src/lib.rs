@@ -1,8 +1,9 @@
+pub mod err;
 pub mod mongodb;
 pub mod todo;
-pub mod err;
 use todo::service::TodoService;
 
+#[derive(Clone)]
 pub struct AppState {
     pub todo_service: TodoService,
 }
