@@ -1,5 +1,6 @@
 use rocket::{
-    form::Form, get, http::Status, patch, post, routes, serde::json::Json, FromForm, Route, State,
+    delete, form::Form, get, http::Status, patch, post, routes, serde::json::Json, FromForm, Route,
+    State,
 };
 
 use crate::AppState;
@@ -7,7 +8,7 @@ use crate::AppState;
 use super::entity::Todo;
 
 pub fn controller_list() -> Vec<Route> {
-    routes![add, get_all, get_by_id, update_by_id]
+    routes![add, get_all, get_by_id, update_by_id, delete_by_id]
 }
 #[derive(FromForm)]
 pub struct AddTodoDto {
@@ -58,5 +59,13 @@ async fn update_by_id(
     {
         Err(_) => Err(Status::InternalServerError),
         Ok(todo) => Ok(Json(todo)),
+    }
+}
+
+#[delete("/<id>")]
+async fn delete_by_id(id: &str, service: &State<AppState>) -> Status {
+    match service.todo_service.delete_by_id(id).await {
+        Some(_) => Status::InternalServerError,
+        None => Status::Ok,
     }
 }

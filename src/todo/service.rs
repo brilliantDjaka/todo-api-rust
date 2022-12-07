@@ -38,6 +38,9 @@ impl TodoService {
             )
             .await
     }
+    pub async fn delete_by_id(&self, id: &str) -> Option<Error> {
+        self.todo_repo.delete_by_id(id).await
+    }
 }
 
 pub fn new(todo_repo: TodoRepository) -> TodoService {

@@ -63,6 +63,22 @@ impl TodoRepository {
             .await?;
         Ok(todo)
     }
+    pub async fn delete_by_id(&self, id: &str) -> Option<Error> {
+        let _id = ObjectId::parse_str(id).unwrap_or_default();
+        let result = self
+            .get_collection()
+            .delete_one(
+                doc! {
+                    "_id": _id
+                },
+                None,
+            )
+            .await;
+        match result {
+            Ok(_) => None,
+            Err(err) => Some(err),
+        }
+    }
 }
 
 pub fn new(db: Client) -> TodoRepository {
