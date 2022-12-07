@@ -13,5 +13,11 @@ async fn rocket() -> _ {
 
     rocket::build()
         .manage(state)
+        .mount("/", routes![health_check])
         .mount("/todo", todo::controller::controller_list())
+}
+
+#[get("/")]
+fn health_check() -> &'static str {
+    "Server is running 🚀"
 }
