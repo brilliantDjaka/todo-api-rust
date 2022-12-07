@@ -1,6 +1,6 @@
 use ::mongodb::{
     bson::{doc, oid::ObjectId},
-    error::{CommandError, Error},
+    error::Error,
     Client, Collection,
 };
 use futures::stream::TryStreamExt;
