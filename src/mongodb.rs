@@ -1,8 +1,15 @@
 use mongodb::{error::Error, Client};
-
-pub const DB_NAME: &str = "todo_db";
-
+use std::env;
 pub async fn connect() -> Result<Client, Error> {
-    let client = Client::with_uri_str("mongodb://localhost:27017").await?;
+    let client = Client::with_uri_str(
+        env::var("MONGO_URI").unwrap_or(String::from("mongodb://localhost:27017/todo_db")),
+    )
+    .await?;
+
+    match client.default_database() {
+        None => panic!("You must spesify database on MONGODB_URI"),
+        _ => "",
+    };
+
     Ok(client)
 }

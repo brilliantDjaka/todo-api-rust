@@ -1,4 +1,6 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use dotenv::dotenv;
+use std::env;
 use todo_rust::{
     mongodb,
     todo::{self, controller::controller_list},
@@ -12,6 +14,7 @@ async fn health_check() -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().ok();
     let mongo = mongodb::connect().await.unwrap();
     let todo_repo = todo::repository::new(mongo.clone());
     let todo_service = todo::service::new(todo_repo);
@@ -23,7 +26,13 @@ async fn main() -> std::io::Result<()> {
             .service(health_check)
             .service(controller_list())
     })
-    .bind(("127.0.0.1", 8000))?
+    .bind((
+        env::var("HOST").unwrap_or(String::from("127.0.0.1")),
+        env::var("PORT")
+            .unwrap_or(String::from("8000"))
+            .parse::<u16>()
+            .unwrap(),
+    ))?
     .run()
     .await
 }

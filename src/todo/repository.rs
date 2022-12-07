@@ -4,10 +4,8 @@ use ::mongodb::{
 };
 use futures::stream::TryStreamExt;
 
-use crate::err::Error;
-use crate::mongodb::DB_NAME;
-
 use super::entity::Todo;
+use crate::err::Error;
 
 const COLLECTION_NAME: &str = "todos";
 
@@ -19,7 +17,8 @@ pub struct TodoRepository {
 impl TodoRepository {
     fn get_collection(&self) -> Collection<Todo> {
         self.db
-            .database(DB_NAME)
+            .default_database()
+            .unwrap()
             .collection::<Todo>(COLLECTION_NAME)
     }
     pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
