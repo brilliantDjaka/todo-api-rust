@@ -2,7 +2,6 @@ use mongodb::bson::oid::ObjectId;
 use rocket::serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(crate = "rocket::serde")]
 pub struct Todo {
     pub _id: ObjectId,
     pub text: String,

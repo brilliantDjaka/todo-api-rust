@@ -1,6 +1,5 @@
 pub mod mongodb;
 pub mod todo;
-
 use todo::service::TodoService;
 
 pub struct AppState {

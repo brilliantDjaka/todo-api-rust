@@ -1,12 +1,12 @@
 use ::mongodb::{
-    bson::{doc, oid::ObjectId, to_document},
-    error::Error,
+    bson::{doc, oid::ObjectId},
     Client, Collection,
 };
 use futures::stream::TryStreamExt;
-use rocket::futures;
+use mongodb::bson::to_document;
+use rocket::{futures, http::Status};
 
-use crate::mongodb;
+use crate::mongodb::DB_NAME;
 
 use super::entity::Todo;
 
@@ -19,22 +19,30 @@ pub struct TodoRepository {
 impl TodoRepository {
     fn get_collection(&self) -> Collection<Todo> {
         self.db
-            .database(mongodb::DB_NAME)
+            .database(DB_NAME)
             .collection::<Todo>(COLLECTION_NAME)
     }
-    pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
-        self.get_collection().insert_one(&todo, None).await?;
-        Ok(todo)
+    pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Status> {
+        match self.get_collection().insert_one(&todo, None).await {
+            Ok(_) => Ok(todo),
+            Err(_) => Err(Status::InternalServerError),
+        }
     }
-    pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
-        let todos = self.get_collection().find(None, None).await?;
-        let todos: Vec<Todo> = todos.try_collect().await?;
+    pub async fn get_all(&self) -> Result<Vec<Todo>, Status> {
+        let todos = match self.get_collection().find(None, None).await {
+            Ok(todos) => todos,
+            Err(_) => return Err(Status::InternalServerError),
+        };
+        let todos: Result<Vec<Todo>, mongodb::error::Error> = todos.try_collect().await;
 
-        Ok(todos)
+        match todos {
+            Ok(todos) => Ok(todos),
+            Err(_) => Err(Status::InternalServerError),
+        }
     }
-    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
+    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Status> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
-        let todo = self
+        match self
             .get_collection()
             .find_one(
                 doc! {
@@ -42,17 +50,23 @@ impl TodoRepository {
                 },
                 None,
             )
-            .await?;
-
-        Ok(todo)
+            .await
+        {
+            Ok(todo) => Ok(todo),
+            Err(_) => Err(Status::NotFound),
+        }
     }
 
     //TODO: Implement Partial Update
-    pub async fn update_by_id(&self, id: &str, todo: Todo) -> Result<Todo, Error> {
+    pub async fn update_by_id(&self, id: &str, todo: Todo) -> Result<Todo, Status> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
         let todo = Todo { _id, ..todo };
-        let update_doc = to_document(&todo)?;
-        self.get_collection()
+        let update_doc = match to_document(&todo) {
+            Err(_) => return Err(Status::InternalServerError),
+            Ok(data) => data,
+        };
+        match self
+            .get_collection()
             .update_one(
                 doc! {"_id": _id},
                 doc! {
@@ -60,10 +74,13 @@ impl TodoRepository {
                 },
                 None,
             )
-            .await?;
-        Ok(todo)
+            .await
+        {
+            Err(_) => Err(Status::InternalServerError),
+            Ok(_) => Ok(todo),
+        }
     }
-    pub async fn delete_by_id(&self, id: &str) -> Option<Error> {
+    pub async fn delete_by_id(&self, id: &str) -> Option<Status> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
         let result = self
             .get_collection()
@@ -76,7 +93,7 @@ impl TodoRepository {
             .await;
         match result {
             Ok(_) => None,
-            Err(err) => Some(err),
+            Err(_) => Some(Status::InternalServerError),
         }
     }
 }

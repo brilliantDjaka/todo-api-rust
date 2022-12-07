@@ -1,16 +1,18 @@
+use rocket::http::Status;
+
 use super::{
     controller::{AddTodoDto, UpdateTodoDto},
     entity::Todo,
     repository::TodoRepository,
 };
-use mongodb::{bson::oid::ObjectId, error::Error};
+use mongodb::bson::oid::ObjectId;
 
 pub struct TodoService {
     todo_repo: TodoRepository,
 }
 
 impl TodoService {
-    pub async fn add_todo(&self, dto: AddTodoDto) -> Result<Todo, Error> {
+    pub async fn add_todo(&self, dto: AddTodoDto) -> Result<Todo, Status> {
         let todo = Todo {
             _id: ObjectId::default(),
             text: dto.text,
@@ -19,14 +21,14 @@ impl TodoService {
 
         self.todo_repo.insert_new_todo(todo).await
     }
-    pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
+    pub async fn get_all(&self) -> Result<Vec<Todo>, Status> {
         self.todo_repo.get_all().await
     }
-    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
+    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Status> {
         self.todo_repo.get_by_id(id).await
     }
 
-    pub async fn update_by_id(&self, id: &str, dto: UpdateTodoDto) -> Result<Todo, Error> {
+    pub async fn update_by_id(&self, id: &str, dto: UpdateTodoDto) -> Result<Todo, Status> {
         self.todo_repo
             .update_by_id(
                 id,
@@ -38,7 +40,7 @@ impl TodoService {
             )
             .await
     }
-    pub async fn delete_by_id(&self, id: &str) -> Option<Error> {
+    pub async fn delete_by_id(&self, id: &str) -> Option<Status> {
         self.todo_repo.delete_by_id(id).await
     }
 }
