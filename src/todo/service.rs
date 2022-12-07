@@ -18,6 +18,9 @@ impl TodoService {
     pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
         self.todo_repo.get_all().await
     }
+    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
+        self.todo_repo.get_by_id(id).await
+    }
 }
 
 pub fn new(todo_repo: TodoRepository) -> TodoService {

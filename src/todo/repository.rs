@@ -1,4 +1,8 @@
-use ::mongodb::{error::Error, Client, Collection};
+use ::mongodb::{
+    bson::{doc, oid::ObjectId},
+    error::{CommandError, Error},
+    Client, Collection,
+};
 use futures::stream::TryStreamExt;
 use rocket::futures;
 
@@ -27,6 +31,20 @@ impl TodoRepository {
         let todos: Vec<Todo> = todos.try_collect().await?;
 
         Ok(todos)
+    }
+    pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
+        let _id = ObjectId::parse_str(id).unwrap_or_default();
+        let todo = self
+            .get_collection()
+            .find_one(
+                doc! {
+                    "_id": _id,
+                },
+                None,
+            )
+            .await?;
+
+        Ok(todo)
     }
 }
 
