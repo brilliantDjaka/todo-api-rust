@@ -5,7 +5,7 @@ use ::mongodb::{
 use futures::stream::TryStreamExt;
 use mongodb::options::FindOptions;
 
-use super::entity::Todo;
+use super::entity::{PartialTodo, Todo};
 use crate::err::Error;
 
 const COLLECTION_NAME: &str = "todos";
@@ -62,13 +62,28 @@ impl TodoRepository {
     }
 
     //TODO: Implement Partial Update
-    pub async fn update_by_id(&self, id: &str, todo: Todo) -> Result<Todo, Error> {
+    pub async fn update_by_id(&self, id: &str, todo: PartialTodo) -> Option<Error> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
-        let todo = Todo { _id, ..todo };
+
+        let existing_todo = match self.get_by_id(id).await {
+            Err(err) => return Some(err),
+            Ok(todo) => todo,
+        };
+
+        let existing_todo = match existing_todo {
+            Some(todo) => todo,
+            None => return Some(Error::NotFoundError),
+        };
+
+        let todo = todo.into_todo(Some(existing_todo));
+
+        // For some reason, None values is null in mongo. but i want to be undefined
+        // TODO find way to make Optional value to be undefined instead null
         let update_doc = match to_document(&todo) {
-            Err(_) => return Err(Error::InternalServerError),
+            Err(_) => return Some(Error::InternalServerError),
             Ok(data) => data,
         };
+
         match self
             .get_collection()
             .update_one(
@@ -80,8 +95,8 @@ impl TodoRepository {
             )
             .await
         {
-            Err(_) => Err(Error::InternalServerError),
-            Ok(_) => Ok(todo),
+            Err(_) => Some(Error::InternalServerError),
+            Ok(_) => None,
         }
     }
     pub async fn delete_by_id(&self, id: &str) -> Option<Error> {

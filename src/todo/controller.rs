@@ -4,6 +4,8 @@ use serde::Deserialize;
 use crate::err::convert_err;
 use crate::AppState;
 
+use super::entity::PartialTodo;
+
 pub fn controller_list() -> Scope {
     web::scope("/todo")
         .service(get_all)
@@ -48,8 +50,17 @@ async fn get_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpRespon
 }
 #[derive(Deserialize)]
 pub struct UpdateTodoDto {
-    pub text: String,
-    pub is_done: bool,
+    pub text: Option<String>,
+    pub is_done: Option<bool>,
+}
+impl UpdateTodoDto {
+    pub fn into_partial_todo(&self) -> PartialTodo {
+        PartialTodo {
+            _id: None,
+            text: self.text.to_owned(),
+            is_done: self.is_done,
+        }
+    }
 }
 
 #[patch("/{id}")]
@@ -63,8 +74,8 @@ async fn update_by_id(
         .update_by_id(req.match_info().get("id").unwrap(), dto.into_inner())
         .await
     {
-        Err(err) => convert_err(err).body(""),
-        Ok(todo) => HttpResponse::Ok().json(todo),
+        Some(err) => convert_err(err).body(""),
+        None => HttpResponse::Ok().finish(),
     }
 }
 

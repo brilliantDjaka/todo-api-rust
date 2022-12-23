@@ -30,16 +30,9 @@ impl TodoService {
         self.todo_repo.get_by_id(id).await
     }
 
-    pub async fn update_by_id(&self, id: &str, dto: UpdateTodoDto) -> Result<Todo, Error> {
+    pub async fn update_by_id(&self, id: &str, dto: UpdateTodoDto) -> Option<Error> {
         self.todo_repo
-            .update_by_id(
-                id,
-                Todo {
-                    text: dto.text,
-                    is_done: dto.is_done,
-                    _id: ObjectId::default(),
-                },
-            )
+            .update_by_id(id, dto.into_partial_todo())
             .await
     }
     pub async fn delete_by_id(&self, id: &str) -> Option<Error> {
