@@ -1,8 +1,9 @@
 use actix_web::{delete, get, patch, post, web, web::Form, HttpRequest, HttpResponse, Scope};
 use serde::Deserialize;
+use validator::Validate;
 
 use crate::err::convert_err;
-use crate::AppState;
+use crate::{AppState, ValidateRequest};
 
 use super::entity::PartialTodo;
 
@@ -48,8 +49,9 @@ async fn get_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpRespon
         },
     }
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Validate)]
 pub struct UpdateTodoDto {
+    #[validate(length(min = 1))]
     pub text: Option<String>,
     pub is_done: Option<bool>,
 }
@@ -62,6 +64,7 @@ impl UpdateTodoDto {
         }
     }
 }
+impl ValidateRequest for UpdateTodoDto {}
 
 #[patch("/{id}")]
 async fn update_by_id(
@@ -69,6 +72,10 @@ async fn update_by_id(
     dto: Form<UpdateTodoDto>,
     service: web::Data<AppState>,
 ) -> HttpResponse {
+    if let Some(err) = dto.validate_req() {
+        return convert_err(err);
+    }
+
     match service
         .todo_service
         .update_by_id(req.match_info().get("id").unwrap(), dto.into_inner())

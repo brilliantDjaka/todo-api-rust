@@ -28,7 +28,7 @@ Simple TODO REST API written in rust a.k.a rust boilerplate
 
 - [x] implement partial update
 - [x] implement efficient update
-- [ ] implement request validation
+- [x] implement request validation
 - [x] add better error handling
 - [ ] make sure perfomance ok with load test
 - [ ] find way to abstract controller without actix_web dependency
