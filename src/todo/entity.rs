@@ -1,5 +1,6 @@
-use mongodb::bson::oid::ObjectId;
+use mongodb::bson::{oid::ObjectId, Document};
 use serde::{Deserialize, Serialize};
+
 #[derive(Clone, Debug, Deserialize, Serialize, Default)]
 pub struct Todo {
     pub _id: ObjectId,
@@ -25,5 +26,21 @@ impl PartialTodo {
             text: self.text.to_owned().unwrap_or(fallback.text),
             is_done: self.is_done.unwrap_or(fallback.is_done),
         }
+    }
+    pub fn into_doc(&self) -> Document {
+        let mut doc = Document::new();
+
+        if self._id.is_some() == true {
+            doc.insert("_id", self._id.unwrap());
+        }
+
+        if self.text.is_some() == true {
+            doc.insert("text", self.text.to_owned().unwrap());
+        }
+        if self.is_done.is_some() == true {
+            doc.insert("is_done", self.is_done.unwrap());
+        }
+
+        doc
     }
 }

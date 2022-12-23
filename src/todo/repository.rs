@@ -1,5 +1,5 @@
 use ::mongodb::{
-    bson::{doc, oid::ObjectId, to_document},
+    bson::{doc, oid::ObjectId},
     Client, Collection,
 };
 use futures::stream::TryStreamExt;
@@ -61,28 +61,10 @@ impl TodoRepository {
         }
     }
 
-    //TODO: Implement Partial Update
     pub async fn update_by_id(&self, id: &str, todo: PartialTodo) -> Option<Error> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
 
-        let existing_todo = match self.get_by_id(id).await {
-            Err(err) => return Some(err),
-            Ok(todo) => todo,
-        };
-
-        let existing_todo = match existing_todo {
-            Some(todo) => todo,
-            None => return Some(Error::NotFoundError),
-        };
-
-        let todo = todo.into_todo(Some(existing_todo));
-
-        // For some reason, None values is null in mongo. but i want to be undefined
-        // TODO find way to make Optional value to be undefined instead null
-        let update_doc = match to_document(&todo) {
-            Err(_) => return Some(Error::InternalServerError),
-            Ok(data) => data,
-        };
+        let update_doc = todo.into_doc();
 
         match self
             .get_collection()
