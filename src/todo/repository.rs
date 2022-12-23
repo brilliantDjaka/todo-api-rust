@@ -3,6 +3,7 @@ use ::mongodb::{
     Client, Collection,
 };
 use futures::stream::TryStreamExt;
+use mongodb::options::FindOptions;
 
 use super::entity::Todo;
 use crate::err::Error;
@@ -28,7 +29,11 @@ impl TodoRepository {
         }
     }
     pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
-        let todos = match self.get_collection().find(None, None).await {
+        let todos = match self
+            .get_collection()
+            .find(None, FindOptions::builder().limit(20).build())
+            .await
+        {
             Ok(todos) => todos,
             Err(_) => return Err(Error::InternalServerError),
         };
