@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::{
     controller::{AddTodoDto, UpdateTodoDto},
     entity::Todo,
@@ -8,7 +10,7 @@ use mongodb::bson::oid::ObjectId;
 
 #[derive(Clone)]
 pub struct TodoService {
-    todo_repo: TodoRepository,
+    todo_repo: Arc<TodoRepository>,
 }
 
 impl TodoService {
@@ -45,6 +47,6 @@ impl TodoService {
     }
 }
 
-pub fn new(todo_repo: TodoRepository) -> TodoService {
+pub fn new(todo_repo: Arc<TodoRepository>) -> TodoService {
     TodoService { todo_repo }
 }

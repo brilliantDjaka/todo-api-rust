@@ -1,6 +1,6 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
-use std::env;
+use std::{env, sync::Arc};
 use todo_rust::{mongodb, todo, AppState};
 
 #[get("/")]
@@ -12,8 +12,8 @@ async fn health_check() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let mongo = mongodb::connect().await.unwrap();
-    let todo_repo = todo::repository::new(mongo.clone());
-    let todo_service = todo::service::new(todo_repo);
+    let todo_repo = Arc::new(todo::repository::new(mongo.clone()));
+    let todo_service = Arc::new(todo::service::new(todo_repo));
     let state = AppState { todo_service };
     let state = web::Data::new(state);
     HttpServer::new(move || {
