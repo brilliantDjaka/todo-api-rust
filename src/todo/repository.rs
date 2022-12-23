@@ -25,7 +25,7 @@ impl TodoRepository {
     pub async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
         match self.get_collection().insert_one(&todo, None).await {
             Ok(_) => Ok(todo),
-            Err(_) => Err(Error::InternalServerError),
+            Err(_) => Err(Error::InternalServerError(None)),
         }
     }
     pub async fn get_all(&self) -> Result<Vec<Todo>, Error> {
@@ -35,13 +35,13 @@ impl TodoRepository {
             .await
         {
             Ok(todos) => todos,
-            Err(_) => return Err(Error::InternalServerError),
+            Err(_) => return Err(Error::InternalServerError(None)),
         };
         let todos: Result<Vec<Todo>, mongodb::error::Error> = todos.try_collect().await;
 
         match todos {
             Ok(todos) => Ok(todos),
-            Err(_) => Err(Error::InternalServerError),
+            Err(_) => Err(Error::InternalServerError(None)),
         }
     }
     pub async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
@@ -57,7 +57,7 @@ impl TodoRepository {
             .await
         {
             Ok(todo) => Ok(todo),
-            Err(_) => Err(Error::NotFoundError),
+            Err(_) => Err(Error::NotFoundError(None)),
         }
     }
 
@@ -77,7 +77,7 @@ impl TodoRepository {
             )
             .await
         {
-            Err(_) => Some(Error::InternalServerError),
+            Err(_) => Some(Error::InternalServerError(None)),
             Ok(_) => None,
         }
     }
@@ -94,7 +94,7 @@ impl TodoRepository {
             .await;
         match result {
             Ok(_) => None,
-            Err(_) => Some(Error::InternalServerError),
+            Err(_) => Some(Error::InternalServerError(None)),
         }
     }
 }

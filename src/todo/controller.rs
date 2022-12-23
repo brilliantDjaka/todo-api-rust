@@ -22,7 +22,7 @@ pub struct AddTodoDto {
 #[post("")]
 async fn add(dto: Form<AddTodoDto>, service: web::Data<AppState>) -> HttpResponse {
     match service.todo_service.add_todo(dto.into_inner()).await {
-        Err(err) => convert_err(err).body(""),
+        Err(err) => convert_err(err),
         Ok(todo) => HttpResponse::Created().json(todo),
     }
 }
@@ -31,7 +31,7 @@ async fn add(dto: Form<AddTodoDto>, service: web::Data<AppState>) -> HttpRespons
 pub async fn get_all(service: web::Data<AppState>) -> HttpResponse {
     match service.todo_service.get_all().await {
         Ok(todo) => HttpResponse::Ok().json(todo),
-        Err(err) => convert_err(err).body(""),
+        Err(err) => convert_err(err),
     }
 }
 #[get("/{id}")]
@@ -41,10 +41,10 @@ async fn get_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpRespon
         .get_by_id(req.match_info().get("id").unwrap())
         .await
     {
-        Err(err) => convert_err(err).body(""),
+        Err(err) => convert_err(err),
         Ok(todo) => match todo {
             Some(todo) => HttpResponse::Ok().json(todo),
-            None => HttpResponse::NotFound().body(""),
+            None => HttpResponse::NotFound().finish(),
         },
     }
 }
@@ -74,7 +74,7 @@ async fn update_by_id(
         .update_by_id(req.match_info().get("id").unwrap(), dto.into_inner())
         .await
     {
-        Some(err) => convert_err(err).body(""),
+        Some(err) => convert_err(err),
         None => HttpResponse::Ok().finish(),
     }
 }
@@ -86,7 +86,7 @@ async fn delete_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpRes
         .delete_by_id(req.match_info().get("id").unwrap())
         .await
     {
-        Some(err) => convert_err(err).body(""),
-        None => HttpResponse::Ok().body(""),
+        Some(err) => convert_err(err),
+        None => HttpResponse::Ok().finish(),
     }
 }
