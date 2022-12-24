@@ -12,7 +12,7 @@ async fn health_check() -> impl Responder {
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
     let mongo = mongodb::connect().await.unwrap();
-    let todo_repo = Arc::new(todo::repository::new(mongo.clone()));
+    let todo_repo = Arc::new(todo::repository_mongo::new(mongo.clone()));
     let todo_service = Arc::new(todo::service::new(todo_repo));
     let state = AppState { todo_service };
     let state = web::Data::new(state);

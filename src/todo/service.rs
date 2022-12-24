@@ -9,7 +9,7 @@ use crate::err::Error;
 use mongodb::bson::oid::ObjectId;
 
 pub struct TodoService {
-    todo_repo: Arc<TodoRepository>,
+    todo_repo: Arc<dyn TodoRepository>,
 }
 
 impl TodoService {
@@ -39,6 +39,6 @@ impl TodoService {
     }
 }
 
-pub fn new(todo_repo: Arc<TodoRepository>) -> TodoService {
+pub fn new(todo_repo: Arc<dyn TodoRepository>) -> TodoService {
     TodoService { todo_repo }
 }
