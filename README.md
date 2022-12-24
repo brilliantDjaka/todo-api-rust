@@ -30,5 +30,10 @@ Simple TODO REST API written in rust a.k.a rust boilerplate
 - [x] implement efficient update
 - [x] implement request validation
 - [x] add better error handling
+- [ ] implement another repository / database provider
+  - [ ] Postgres
+  - [ ] MySQL
+  - [ ] SQLite
+  - [ ] Redis
 - [ ] make sure perfomance ok with load test
 - [ ] find way to abstract controller without actix_web dependency
