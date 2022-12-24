@@ -1,14 +1,14 @@
 use mongodb::bson::{oid::ObjectId, Document};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub struct Todo {
     pub _id: ObjectId,
     pub text: String,
     pub is_done: bool,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct PartialTodo {
     pub _id: Option<ObjectId>,
     pub text: Option<String>,

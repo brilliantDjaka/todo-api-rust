@@ -8,7 +8,6 @@ use super::{
 use crate::err::Error;
 use mongodb::bson::oid::ObjectId;
 
-#[derive(Clone)]
 pub struct TodoService {
     todo_repo: Arc<TodoRepository>,
 }

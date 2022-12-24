@@ -7,7 +7,6 @@ use err::Error;
 use todo::service::TodoService;
 use validator::Validate;
 
-#[derive(Clone)]
 pub struct AppState {
     pub todo_service: Arc<TodoService>,
 }

@@ -10,7 +10,6 @@ use crate::err::Error;
 
 const COLLECTION_NAME: &str = "todos";
 
-#[derive(Clone)]
 pub struct TodoRepository {
     db: Client,
 }
