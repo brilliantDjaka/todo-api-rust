@@ -1,4 +1,4 @@
-use mongodb::{error::Error, Client};
+use mongodb::{bson::Document, error::Error, Client};
 use std::env;
 pub async fn connect() -> Result<Client, Error> {
     let client = Client::with_uri_str(
@@ -12,4 +12,9 @@ pub async fn connect() -> Result<Client, Error> {
     };
 
     Ok(client)
+}
+
+pub trait EntityDoc {
+    fn from_doc(doc: Document) -> Self;
+    fn into_doc(&self) -> Document;
 }

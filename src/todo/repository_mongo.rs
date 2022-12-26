@@ -8,7 +8,7 @@ use mongodb::options::FindOptions;
 
 use super::entity::{PartialTodo, Todo};
 use super::repository::TodoRepository;
-use crate::err::Error;
+use crate::{err::Error, mongodb::EntityDoc};
 
 const COLLECTION_NAME: &str = "todos";
 
@@ -124,4 +124,49 @@ impl TodoRepository for TodoRepositoryMongo {
 
 pub fn new(db: Client) -> TodoRepositoryMongo {
     TodoRepositoryMongo { db }
+}
+
+impl EntityDoc for Todo {
+    fn from_doc(doc: Document) -> Self {
+        let mut todo = Todo::default();
+        todo.id = doc.get_object_id("_id").unwrap().to_string();
+        todo.text = doc.get_str("text").unwrap().to_owned();
+        todo.is_done = doc.get_bool("is_done").unwrap();
+        return todo;
+    }
+    fn into_doc(&self) -> Document {
+        let mut doc = Document::new();
+        if self.id != "" {
+            doc.insert("_id", ObjectId::parse_str(self.id.to_owned()).unwrap());
+        } else {
+            doc.insert("_id", ObjectId::default());
+        }
+        doc.insert("text", self.text.to_owned());
+        doc.insert("is_done", self.is_done);
+        doc
+    }
+}
+
+impl EntityDoc for PartialTodo {
+    fn into_doc(&self) -> Document {
+        let mut doc = Document::new();
+
+        if self.id.is_some() == true {
+            let id: ObjectId = ObjectId::parse_str(self.id.to_owned().unwrap()).unwrap();
+            doc.insert("_id", id);
+        }
+
+        if self.text.is_some() == true {
+            doc.insert("text", self.text.to_owned().unwrap());
+        }
+        if self.is_done.is_some() == true {
+            doc.insert("is_done", self.is_done.unwrap());
+        }
+
+        doc
+    }
+
+    fn from_doc(_: Document) -> Self {
+        todo!("Not Implemented")
+    }
 }
