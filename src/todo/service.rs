@@ -6,7 +6,6 @@ use super::{
     repository::TodoRepository,
 };
 use crate::err::Error;
-use mongodb::bson::oid::ObjectId;
 
 pub struct TodoService {
     todo_repo: Arc<dyn TodoRepository>,
@@ -15,7 +14,7 @@ pub struct TodoService {
 impl TodoService {
     pub async fn add_todo(&self, dto: AddTodoDto) -> Result<Todo, Error> {
         let todo = Todo {
-            _id: ObjectId::default(),
+            id: "".to_owned(),
             text: dto.text,
             is_done: false,
         };

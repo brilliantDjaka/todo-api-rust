@@ -1,5 +1,5 @@
 use ::mongodb::{
-    bson::{doc, oid::ObjectId},
+    bson::{doc, oid::ObjectId, Document},
     Client, Collection,
 };
 use async_trait::async_trait;
@@ -17,18 +17,22 @@ pub struct TodoRepositoryMongo {
 }
 
 impl TodoRepositoryMongo {
-    fn get_collection(&self) -> Collection<Todo> {
+    fn get_collection(&self) -> Collection<Document> {
         self.db
             .default_database()
             .unwrap()
-            .collection::<Todo>(COLLECTION_NAME)
+            .collection::<Document>(COLLECTION_NAME)
     }
 }
 
 #[async_trait]
 impl TodoRepository for TodoRepositoryMongo {
     async fn insert_new_todo(&self, todo: Todo) -> Result<Todo, Error> {
-        match self.get_collection().insert_one(&todo, None).await {
+        match self
+            .get_collection()
+            .insert_one(todo.into_doc(), None)
+            .await
+        {
             Ok(_) => Ok(todo),
             Err(_) => Err(Error::InternalServerError(None)),
         }
@@ -42,16 +46,21 @@ impl TodoRepository for TodoRepositoryMongo {
             Ok(todos) => todos,
             Err(_) => return Err(Error::InternalServerError(None)),
         };
-        let todos: Result<Vec<Todo>, mongodb::error::Error> = todos.try_collect().await;
+        let todos: Result<Vec<Document>, mongodb::error::Error> = todos.try_collect().await;
 
-        match todos {
-            Ok(todos) => Ok(todos),
-            Err(_) => Err(Error::InternalServerError(None)),
+        let todos = match todos {
+            Ok(todos) => todos,
+            Err(_) => return Err(Error::InternalServerError(None)),
+        };
+        let mut mapped_todo: Vec<Todo> = vec![];
+        for todo in todos {
+            mapped_todo.push(Todo::from_doc(todo));
         }
+        return Ok(mapped_todo);
     }
     async fn get_by_id(&self, id: &str) -> Result<Option<Todo>, Error> {
         let _id = ObjectId::parse_str(id).unwrap_or_default();
-        match self
+        let todo = self
             .get_collection()
             .find_one(
                 doc! {
@@ -59,10 +68,19 @@ impl TodoRepository for TodoRepositoryMongo {
                 },
                 None,
             )
-            .await
-        {
-            Ok(todo) => Ok(todo),
-            Err(_) => Err(Error::NotFoundError(None)),
+            .await;
+        let todo = match todo {
+            Err(_) => {
+                return Err(Error::InternalServerError(Some(
+                    "Cant find data".to_owned(),
+                )))
+            }
+            Ok(todo) => todo,
+        };
+
+        match todo {
+            None => Ok(None),
+            Some(todo) => Ok(Some(Todo::from_doc(todo))),
         }
     }
 

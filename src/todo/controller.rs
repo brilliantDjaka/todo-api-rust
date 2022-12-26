@@ -58,7 +58,7 @@ pub struct UpdateTodoDto {
 impl UpdateTodoDto {
     pub fn into_partial_todo(&self) -> PartialTodo {
         PartialTodo {
-            _id: None,
+            id: None,
             text: self.text.to_owned(),
             is_done: self.is_done,
         }
