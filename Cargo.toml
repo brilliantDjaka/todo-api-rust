@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 mongodb = "2.3.1"
+tokio-postgres = "0.7.7"
 serde = "1.0.149"
 thiserror = "1.0.37"
 futures = "0.3.25"
@@ -14,3 +15,4 @@ actix-web = "4.2.1"
 dotenv = "0.15.0"
 validator = { version = "0.16", features = ["derive"] }
 async-trait = "0.1.60"
+tokio = "1.23.0"

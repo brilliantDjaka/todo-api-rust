@@ -1,5 +1,6 @@
 pub mod err;
 pub mod mongodb;
+pub mod postgres;
 pub mod todo;
 use std::sync::Arc;
 
