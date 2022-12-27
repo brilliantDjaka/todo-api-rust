@@ -31,7 +31,7 @@ Simple TODO REST API written in rust a.k.a rust boilerplate
 - [x] implement request validation
 - [x] add better error handling
 - [ ] implement another repository / database provider
-  - [ ] Postgres
+  - [x] Postgres
   - [ ] MySQL
   - [ ] SQLite
   - [ ] Redis
