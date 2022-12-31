@@ -1,11 +1,9 @@
+use super::dto::{AddTodoDto, UpdateTodoDto};
 use actix_web::{delete, get, patch, post, web, web::Form, HttpRequest, HttpResponse, Scope};
-use serde::Deserialize;
-use validator::Validate;
 
 use crate::err::convert_err;
-use crate::{AppState, ValidateRequest};
 
-use super::entity::PartialTodo;
+use crate::{AppState, ValidateRequest};
 
 pub fn controller_list() -> Scope {
     web::scope("/todo")
@@ -14,10 +12,6 @@ pub fn controller_list() -> Scope {
         .service(delete_by_id)
         .service(add)
         .service(update_by_id)
-}
-#[derive(Deserialize)]
-pub struct AddTodoDto {
-    pub text: String,
 }
 
 #[post("")]
@@ -49,22 +43,6 @@ async fn get_by_id(req: HttpRequest, service: web::Data<AppState>) -> HttpRespon
         },
     }
 }
-#[derive(Deserialize, Validate)]
-pub struct UpdateTodoDto {
-    #[validate(length(min = 1))]
-    pub text: Option<String>,
-    pub is_done: Option<bool>,
-}
-impl UpdateTodoDto {
-    pub fn into_partial_todo(&self) -> PartialTodo {
-        PartialTodo {
-            id: None,
-            text: self.text.to_owned(),
-            is_done: self.is_done,
-        }
-    }
-}
-impl ValidateRequest for UpdateTodoDto {}
 
 #[patch("/{id}")]
 async fn update_by_id(

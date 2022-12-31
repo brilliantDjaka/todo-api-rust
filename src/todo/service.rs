@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use super::{
-    controller::{AddTodoDto, UpdateTodoDto},
+    dto::{AddTodoDto, UpdateTodoDto},
     entity::Todo,
     repository::TodoRepository,
 };
