@@ -1,8 +1,7 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use dotenv::dotenv;
 use std::{env, sync::Arc};
-use todo_rust::{postgres, todo, AppState};
-// use todo_rust::mongodb;
+use todo_rust::{mongodb, todo, AppState};
 #[get("/")]
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().body("Server is running 🚀")
@@ -11,11 +10,11 @@ async fn health_check() -> impl Responder {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
-    // let mongo = mongodb::connect().await.unwrap();
-    // let todo_repo = Arc::new(todo::repository_mongo::new(mongo.clone()));
+    let mongo = mongodb::connect().await.unwrap();
+    let todo_repo = Arc::new(todo::repository_mongo::new(mongo.clone()));
 
-    let postgre = Arc::new(postgres::connect().await);
-    let todo_repo = Arc::new(todo::repository_postgres::new(postgre.clone()));
+    // let postgre = Arc::new(postgres::connect().await);
+    // let todo_repo = Arc::new(todo::repository_postgres::new(postgre.clone()));
 
     let todo_service = Arc::new(todo::service::new(todo_repo));
     let state = AppState { todo_service };
